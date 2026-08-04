@@ -96,7 +96,7 @@ class BM25:
         return scores
 
 
-def rank_chunks(chunks, query, top_k=12):
+def rank_chunks(chunks, query, top_k=6):
     if not chunks:
         return []
 
