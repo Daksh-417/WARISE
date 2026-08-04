@@ -16,8 +16,7 @@ def chunk_text(text, words=400, overlap=75):
 
     return chunks
 
-
-def make_chunks(pages, words=400, overlap=75):
+def make_chunks(pages, words=250, overlap=50):
     chunks = []
 
     for source_id, page in enumerate(pages, 1):
