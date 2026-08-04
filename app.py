@@ -152,7 +152,7 @@ if run:
             chunks = chunk.make_chunks(pages)
 
             st.write("4/6 Rank")
-            evidence = rank.rank_chunks(chunks, query, top_k=12)
+            evidence = rank.rank_chunks(chunks, query, top_k=6)
 
             if not evidence:
                 status.update(label="Ranking failed", state="error")
