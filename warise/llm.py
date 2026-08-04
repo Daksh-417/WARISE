@@ -21,13 +21,25 @@ Never invent facts or sources. If evidence is insufficient, say that clearly."""
 
 def _context(evidence):
     parts = []
+    total_chars = 0
+    MAX_CHARS = 15000  # ~4000 tokens, safely under Groq's 6000 limit
 
     for item in evidence:
-        parts.append(
+        text = item['text']
+        if len(text) > 1500:
+            text = text[:1500] + "..."
+            
+        part = (
             f"[{item['source_id']}] {item['title']}\n"
             f"URL: {item['url']}\n"
-            f"Evidence: {item['text']}"
+            f"Evidence: {text}"
         )
+        
+        if total_chars + len(part) > MAX_CHARS:
+            break
+            
+        parts.append(part)
+        total_chars += len(part)
 
     return "\n\n---\n\n".join(parts)
 
