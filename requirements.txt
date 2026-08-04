@@ -1,0 +1,7 @@
+streamlit
+groq
+duckduckgo-search
+tavily-python
+trafilatura
+python-dotenv
+fpdf2
