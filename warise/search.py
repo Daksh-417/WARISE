@@ -23,7 +23,7 @@ def _norm_ddg(items):
 
 def ddg_search(query, max_results):
     try:
-        from duckduckgo_search import DDGS
+        from ddgs import DDGS  # renamed package
 
         ddgs = DDGS()
         results = list(ddgs.text(query, max_results=max_results))
