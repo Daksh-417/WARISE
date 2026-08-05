@@ -242,6 +242,7 @@ if st.session_state.get("result") and st.session_state.result.get("answer"):
     result = st.session_state.result
     pages = result["pages"]
     evidence = result["evidence"]
+    evidence_map = evidence_by_source(evidence) 
 
     st.subheader("Result")
 
