@@ -242,8 +242,6 @@ if st.session_state.get("result") and st.session_state.result.get("answer"):
     result = st.session_state.result
     pages = result["pages"]
     evidence = result["evidence"]
-    evidence_map = evidence_by_source(evidence)
-    citations = utils.extract_citations(result["answer"])
 
     st.subheader("Result")
 
@@ -283,16 +281,6 @@ if st.session_state.get("result") and st.session_state.result.get("answer"):
     st.subheader(f"Answer: {result['mode']}")
     st.markdown(result["answer"])
 
-    if citations:
-        st.subheader("Citation inspector")
-        cols = st.columns(min(len(citations), 10))
-
-        for idx, citation_id in enumerate(citations):
-            if cols[idx % len(cols)].button(
-                f"[{citation_id}]",
-                key=f"cite_{citation_id}",
-            ):
-                st.session_state.selected_citation = citation_id
 
     st.subheader("Copy / Export")
     st.code(result["answer"], language="markdown")
@@ -339,27 +327,6 @@ if st.session_state.get("result") and st.session_state.result.get("answer"):
             result.get("bib_style", "APA"),
         ):
             st.write(f"- {item}")
-
-    with st.sidebar:
-        st.divider()
-        st.subheader("Evidence panel")
-
-        selected = st.session_state.get("selected_citation")
-
-        if selected and selected in evidence_map:
-            if 1 <= selected <= len(pages):
-                page = pages[selected - 1]
-                st.write(f"Source [{selected}]")
-                st.write(page.get("title", ""))
-                st.write(page.get("url", ""))
-                st.write(utils.source_quality(page.get("url", "")))
-
-            for item in evidence_map[selected][:3]:
-                st.markdown(
-                    f"**Evidence quote:** {utils.truncate(item.get('text', ''), 300)}"
-                )
-        else:
-            st.write("Click a citation button under the answer to inspect its evidence.")
 
 
 with st.expander("History"):
