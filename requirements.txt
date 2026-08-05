@@ -1,6 +1,6 @@
 streamlit
 groq
-duckduckgo-search
+ddgs
 tavily-python
 trafilatura
 python-dotenv
