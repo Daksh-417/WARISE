@@ -43,7 +43,7 @@ with col1:
         placeholder="e.g., What is the impact of AI on healthcare?"
     )
 with col2:
-    max_sources = st.slider("Sources", min_value=2, max_value=6, value=4)
+    max_sources = st.slider("Sources", min_value=4, max_value=10, value=6)
 
 generate_btn = st.button("🚀 Generate Report", type="primary", use_container_width=True)
 
