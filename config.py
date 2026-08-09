@@ -11,7 +11,7 @@ TAVILY_API_KEY = st.secrets.get("TAVILY_API_KEY")
 
 # --- App Settings ---
 MAX_SEARCH_RESULTS = 4          # Number of web sources to fetch
-LLM_MODEL = "llama3-70b-8192"   # Groq model to use
+LLM_MODEL = "llama-3.3-70b-versatile"   # Groq model to use
 
 # --- Validation ---
 def validate_keys():
