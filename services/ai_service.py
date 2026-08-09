@@ -46,10 +46,12 @@ def synthesize_report(question: str, sources: list[dict]) -> str:
     ]
 
     try:
-        response = client.chat.completions.create(
+        stream = client.chat.completions.create(
             model=config.LLM_MODEL,
             messages=messages,
-            temperature=0.3,  # Lower = more factual
+            temperature=0.3,
+            max_completion_tokens=config.MAX_REPORT_TOKENS,  # allow long reports
+            stream=True
         )
         return response.choices[0].message.content
 
@@ -90,6 +92,7 @@ def synthesize_report_stream(question: str, sources: list[dict]):
         model=config.LLM_MODEL,
         messages=messages,
         temperature=0.3,
+        max_completion_tokens=config.MAX_REPORT_TOKENS,  # allow long reports
         stream=True
     )
 
