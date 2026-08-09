@@ -1,14 +1,20 @@
 """
 search_service.py
 Handles web search using Tavily API.
-Returns structured results: title, URL, and clean content.
+Applies a smart context budget instead of blind per-source truncation.
 """
 
 from tavily import TavilyClient
 import config
 
+
 def search_web(query: str, max_results: int = None) -> list[dict]:
-    """Searches Tavily with advanced depth. Returns clean content."""
+    """
+    Search the web for a given query.
+
+    Returns:
+        List of dicts with keys: 'title', 'url', 'content'
+    """
     if max_results is None:
         max_results = config.MAX_SEARCH_RESULTS
 
@@ -18,7 +24,7 @@ def search_web(query: str, max_results: int = None) -> list[dict]:
         response = client.search(
             query=query,
             max_results=max_results,
-            search_depth="advanced"  # Deep extraction
+            search_depth="advanced"  # Deep, clean extraction
         )
 
         results = []
@@ -26,12 +32,10 @@ def search_web(query: str, max_results: int = None) -> list[dict]:
             results.append({
                 "title": item.get("title", "Untitled"),
                 "url": item.get("url", ""),
-                "content": item.get("content", "")  # NO truncation here
+                "content": item.get("content", "")  # No blind truncation
             })
 
-        # Smart budget: trim total context if it exceeds the limit
-        results = _apply_context_budget(results)
-        return results
+        return _apply_context_budget(results)
 
     except Exception as e:
         print(f"[Search Error] {e}")
@@ -40,21 +44,24 @@ def search_web(query: str, max_results: int = None) -> list[dict]:
 
 def _apply_context_budget(sources: list[dict]) -> list[dict]:
     """
-    Instead of cutting each source blindly,
-    we trim from the END if total context exceeds budget.
-    This preserves the most relevant sources (top results).
+    Smart budget: if total context exceeds MAX_CONTEXT_CHARS,
+    trim the tail (least relevant sources) while keeping
+    top results fully intact.
     """
     total_chars = 0
     trimmed = []
 
     for src in sources:
-        total_chars += len(src["content"])
-        if total_chars > config.MAX_CONTEXT_CHARS:
-            # Trim this source to fit remaining budget
-            remaining = config.MAX_CONTEXT_CHARS - (total_chars - len(src["content"]))
-            src["content"] = src["content"][:remaining]
-            trimmed.append(src)
-            break  # Stop adding more sources
+        content_len = len(src["content"])
+
+        if total_chars + content_len > config.MAX_CONTEXT_CHARS:
+            remaining = config.MAX_CONTEXT_CHARS - total_chars
+            if remaining > 0:
+                src["content"] = src["content"][:remaining]
+                trimmed.append(src)
+            break  # Stop adding further sources
+
+        total_chars += content_len
         trimmed.append(src)
 
     return trimmed
