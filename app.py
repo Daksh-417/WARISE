@@ -6,9 +6,8 @@ Run with: streamlit run app.py
 import streamlit as st
 import config
 from services.search_service import search_web
-from services.ai_service import synthesize_report_stream
+from services.ai_service import synthesize_report_long
 from utils.exporter import build_markdown, get_filename
-
 
 # ─────────────────────────────────────────────
 # Page Setup
@@ -22,6 +21,15 @@ st.set_page_config(
 st.title("🔬 WARISE")
 st.caption("Web Augmented Research Intelligence and Synthesis Engine")
 
+# ─────────────────────────────────────────────
+# Validate API Keys
+# ─────────────────────────────────────────────
+missing_keys = config.validate_keys()
+if missing_keys:
+    st.error(f"⚠️ Missing API keys: {', '.join(missing_keys)}. "
+             f"Add them to `.streamlit/secrets.toml` (local) "
+             f"or the Secrets manager (Streamlit Cloud).")
+    st.stop()
 
 # ─────────────────────────────────────────────
 # Input Section
@@ -35,7 +43,7 @@ with col1:
         placeholder="e.g., What is the impact of AI on healthcare?"
     )
 with col2:
-    max_sources = st.slider("Sources", min_value=4, max_value=10, value=6)
+    max_sources = st.slider("Sources", min_value=2, max_value=6, value=6)
 
 generate_btn = st.button("🚀 Generate Report", type="primary", use_container_width=True)
 
@@ -57,17 +65,17 @@ if generate_btn and question.strip():
     for i, src in enumerate(sources, 1):
         with st.expander(f"Source {i}: {src['title']}"):
             st.write(f"**URL:** [{src['url']}]({src['url']})")
-            st.write(f"**Snippet:** {src['content'][:200]}...")
+            st.write(f"**Snippet:** {src['content'][:300]}...")
 
     st.divider()
 
-    # Step 3: Generate AI Report (streamed)
+    # Step 3: Generate long AI report (streamed, section-wise)
     st.subheader("📄 Synthesized Report")
 
     report_placeholder = st.empty()
     full_report = ""
 
-    for chunk in synthesize_report_stream(question, sources):
+    for chunk in synthesize_report_long(question, sources):
         full_report += chunk
         report_placeholder.markdown(full_report + "▌")  # Cursor effect
 
