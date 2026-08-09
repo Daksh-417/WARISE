@@ -75,9 +75,9 @@ if generate_btn and question.strip():
     report_placeholder = st.empty()
     full_report = ""
 
-    for chunk in synthesize_report_long(question, sources):
-        full_report += chunk
-        report_placeholder.markdown(full_report + "▌")  # Cursor effect
+    # for chunk in synthesize_report_long(question, sources):
+    #     full_report += chunk
+    #     report_placeholder.markdown(full_report + "▌")  # Cursor effect
 
     report_placeholder.markdown(full_report)  # Final clean render
 
