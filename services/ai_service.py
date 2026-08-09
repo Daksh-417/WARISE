@@ -1,104 +1,78 @@
 """
 ai_service.py
-Handles AI synthesis using Groq (Llama 3).
-Takes search context and generates a structured research report.
+Handles AI synthesis using Groq (Llama 3.3 70B).
+Section-wise generation: each API call writes one section within
+the output ceiling; the app concatenates them into a long report.
 """
 
 from groq import Groq
 import config
 
+# (title, writing instruction) for each report section
+REPORT_SECTIONS = [
+    ("Overview", "Introduce the topic and give a clear high-level summary."),
+    ("Key Findings", "List the most important facts as bullet points with citations."),
+    ("Detailed Analysis", "Compare sources, discuss trends, contradictions, and implications."),
+    ("Conclusion", "Summarize insights and suggest future research directions."),
+]
 
-def synthesize_report(question: str, sources: list[dict]) -> str:
+
+def synthesize_report_long(question: str, sources: list[dict]):
     """
-    Generate a complete research report from sources.
-
-    Args:
-        question: The user's research question.
-        sources: List of source dicts from search_service.
-
-    Returns:
-        The full report as a string (non-streaming).
-    """
-    # Build context string from all sources
-    context = _build_context(sources)
-
-    client = Groq(api_key=config.GROQ_API_KEY)
-
-    messages = [
-        {
-            "role": "system",
-            "content": (
-                "You are WARISE, a research synthesis engine. "
-                "Write a structured report with these sections:\n"
-                "## Overview\n"
-                "## Key Findings\n"
-                "- Bullet points\n"
-                "## Analysis\n"
-                "## Conclusion\n\n"
-                "Cite sources as [Source 1], [Source 2], etc. "
-                "Be concise, factual, and well-organized."
-            )
-        },
-        {
-            "role": "user",
-            "content": f"Research Question: {question}\n\nSources:\n{context}"
-        }
-    ]
-
-    try:
-        stream = client.chat.completions.create(
-            model=config.LLM_MODEL,
-            messages=messages,
-            temperature=0.3,
-            max_completion_tokens=config.MAX_REPORT_TOKENS,  # allow long reports
-            stream=True
-        )
-        return response.choices[0].message.content
-
-    except Exception as e:
-        return f"❌ AI Generation Error: {e}"
-
-
-def synthesize_report_stream(question: str, sources: list[dict]):
-    """
-    Generator version: streams the report word-by-word.
-    Used with st.write_stream() for live output.
+    Generator: streams a long, section-wise report.
+    Each call stays under MAX_REPORT_TOKENS; combined length
+    scales with the number of sections, not the ceiling.
     """
     context = _build_context(sources)
-
     client = Groq(api_key=config.GROQ_API_KEY)
+    written_so_far = ""
 
-    messages = [
-        {
-            "role": "system",
-            "content": (
-                "You are WARISE, a research synthesis engine. "
-                "Write a structured report with these sections:\n"
-                "## Overview\n"
-                "## Key Findings\n"
-                "- Bullet points\n"
-                "## Analysis\n"
-                "## Conclusion\n\n"
-                "Cite sources as [Source 1], [Source 2], etc."
+    for title, instruction in REPORT_SECTIONS:
+        messages = [
+            {
+                "role": "system",
+                "content": (
+                    "You are WARISE, a research synthesis engine. "
+                    "Write ONLY the section you are asked for. "
+                    "Cite sources as [Source 1], [Source 2], etc. "
+                    "Do not repeat content already written."
+                )
+            },
+            {
+                "role": "user",
+                "content": (
+                    f"Research Question: {question}\n\n"
+                    f"Sources:\n{context}\n\n"
+                    f"Report written so far:\n{written_so_far}\n\n"
+                    f"Now write the section '## {title}'.\n"
+                    f"Instructions: {instruction}"
+                )
+            }
+        ]
+
+        try:
+            stream = client.chat.completions.create(
+                model=config.LLM_MODEL,
+                messages=messages,
+                temperature=0.3,
+                max_completion_tokens=config.MAX_REPORT_TOKENS,
+                stream=True
             )
-        },
-        {
-            "role": "user",
-            "content": f"Research Question: {question}\n\nSources:\n{context}"
-        }
-    ]
+        except Exception as e:
+            yield f"\n\n❌ AI Generation Error: {e}"
+            return
 
-    stream = client.chat.completions.create(
-        model=config.LLM_MODEL,
-        messages=messages,
-        temperature=0.3,
-        max_completion_tokens=config.MAX_REPORT_TOKENS,  # allow long reports
-        stream=True
-    )
+        # Stream section header first
+        header = f"\n\n## {title}\n\n"
+        written_so_far += header
+        yield header
 
-    for chunk in stream:
-        if chunk.choices[0].delta.content:
-            yield chunk.choices[0].delta.content
+        # Stream section content token by token
+        for chunk in stream:
+            if chunk.choices[0].delta.content:
+                text = chunk.choices[0].delta.content
+                written_so_far += text
+                yield text
 
 
 def _build_context(sources: list[dict]) -> str:
