@@ -21,17 +21,17 @@ streamlit run app.py
 ## Project Structure
 
 warise/
-├── app.py                  # Main UI
-├── config.py               # Settings & env loader
-├── services/
-│   ├── search_service.py   # Web search (Tavily)
-│   └── ai_service.py       # AI synthesis (Groq)
-├── utils/
-│   └── exporter.py         # Markdown export
-├── requirements.txt
-├── .env.example
-└── README.md
-
+├── app.py                  # Main UI 
+├── config.py               # Settings & env loader 
+├── services/ 
+│   ├── search_service.py   # Web search (Tavily) 
+│   └── ai_service.py       # AI synthesis (Groq) 
+├── utils/ 
+│   └── exporter.py         # Markdown export 
+├── requirements.txt 
+├── .env.example 
+└── README.md 
+ 
 ## How It Works
 
 User Input (app.py)
