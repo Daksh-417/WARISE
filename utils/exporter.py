@@ -7,27 +7,15 @@ from datetime import datetime
 
 
 def build_markdown(question: str, report: str, sources: list[dict]) -> str:
-    """
-    Build a complete Markdown document with metadata.
-
-    Args:
-        question: The original research question.
-        report: The AI-generated report text.
-        sources: List of source dicts.
-
-    Returns:
-        Formatted Markdown string.
-    """
+    """Build a complete Markdown document with metadata."""
     timestamp = datetime.now().strftime("%Y-%m-%d %H:%M")
 
-    # Build source list
     source_lines = []
     for i, src in enumerate(sources, 1):
         source_lines.append(f"{i}. [{src['title']}]({src['url']})")
 
     sources_md = "\n".join(source_lines)
 
-    # Assemble full document
     markdown = f"""# WARISE Research Report
 
 **Generated:** {timestamp}
