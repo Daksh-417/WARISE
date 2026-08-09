@@ -22,14 +22,6 @@ st.set_page_config(
 st.title("🔬 WARISE")
 st.caption("Web Augmented Research Intelligence and Synthesis Engine")
 
-# ─────────────────────────────────────────────
-# Validate API Keys
-# ─────────────────────────────────────────────
-missing_keys = config.validate_keys()
-if missing_keys:
-    st.error(f"⚠️ Missing API keys: {', '.join(missing_keys)}. "
-             f"Please set them in your `.env` file.")
-    st.stop()
 
 # ─────────────────────────────────────────────
 # Input Section
