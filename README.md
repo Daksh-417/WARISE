@@ -1,7 +1,7 @@
 # 🔬 WARISE — Web Augmented Research Intelligence and Synthesis Engine
 
-A beginner-friendly AI research assistant that searches the web,
-synthesizes findings, and generates a cited report.
+A modular AI research assistant that searches the web, synthesizes
+findings section-by-section, and exports a long-form cited report.
 
 ## Quick Start
 
@@ -9,43 +9,32 @@ synthesizes findings, and generates a cited report.
 pip install -r requirements.txt
 
 ### 2. Set Up API Keys
-cp .env.example .env
-
-Edit `.env` and add:
-- `GROQ_API_KEY` → Free at https://console.groq.com
-- `TAVILY_API_KEY` → Free at https://tavily.com
+mkdir .streamlit
+# Create .streamlit/secrets.toml:
+# GROQ_API_KEY = "..."   → Free at https://console.groq.com
+# TAVILY_API_KEY = "..." → Free at https://tavily.com
 
 ### 3. Run
 streamlit run app.py
 
-## Project Structure
-
-warise/
-├── app.py                  # Main UI 
-├── config.py               # Settings & env loader 
-├── services/ 
-│   ├── search_service.py   # Web search (Tavily) 
-│   └── ai_service.py       # AI synthesis (Groq) 
-├── utils/ 
-│   └── exporter.py         # Markdown export 
-├── requirements.txt 
-├── .env.example 
-└── README.md 
- 
-## How It Works
+## Architecture
 
 User Input (app.py)
        │
        ▼
-search_service.py ──→ Tavily API ──→ Returns URLs + clean text
+search_service.py → Tavily (advanced) → clean snippets + smart context budget
        │
        ▼
-ai_service.py ──→ Groq API (Llama 3) ──→ Structured report
+ai_service.py → Groq Llama 3.3 70B → section-wise streamed synthesis
        │
        ▼
-exporter.py ──→ Markdown file download
+exporter.py → Markdown download with references
 
-1. User enters a research question
-2. Tavily searches the web and returns clean snippets
-3. Groq (Llama 3) synthesizes a structured, cited report
-4. User downloads the report as Markdown
+## Engineering Decisions
+
+- **st.secrets** over .env → Streamlit-native, deployment-safe key handling.
+- **Tavily advanced search** → clean, noise-free content (no HTML scraping).
+- **Smart context budget (80K chars ≈ 20K tokens)** → stays safely inside
+  the 131,072-token window while maximizing source depth.
+- **Section-wise generation** → each call stays under the 8,192-token output
+  cap; combined report scales with section count, not the model ceiling.
