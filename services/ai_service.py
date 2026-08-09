@@ -34,6 +34,8 @@ def synthesize_report_long(question: str, sources: list[dict]):
                 "content": (
                     "You are WARISE, a research synthesis engine. "
                     "Write ONLY the section you are asked for. "
+                    "Do NOT include the section heading or title in your answer — "
+                    "the app adds it automatically. Start directly with the content. "
                     "Cite sources as [Source 1], [Source 2], etc. "
                     "Do not repeat content already written."
                 )
@@ -44,7 +46,8 @@ def synthesize_report_long(question: str, sources: list[dict]):
                     f"Research Question: {question}\n\n"
                     f"Sources:\n{context}\n\n"
                     f"Report written so far:\n{written_so_far}\n\n"
-                    f"Now write the section '## {title}'.\n"
+                    f"Now write the '{title}' section "
+                    f"(heading is added by the app — do NOT type it).\n"
                     f"Instructions: {instruction}"
                 )
             }
@@ -62,7 +65,7 @@ def synthesize_report_long(question: str, sources: list[dict]):
             yield f"\n\n❌ AI Generation Error: {e}"
             return
 
-        # Stream section header first
+        # Stream section header first (app-controlled, so no duplication)
         header = f"\n\n## {title}\n\n"
         written_so_far += header
         yield header
