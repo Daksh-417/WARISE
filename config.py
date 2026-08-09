@@ -10,12 +10,12 @@ GROQ_API_KEY = st.secrets.get("GROQ_API_KEY")
 TAVILY_API_KEY = st.secrets.get("TAVILY_API_KEY")
 
 # --- App Settings ---
-MAX_SEARCH_RESULTS = 4          # Number of web sources to fetch
-LLM_MODEL = "llama-3.3-70b-versatile"   # Groq model to use
+MAX_SEARCH_RESULTS = 6           # More sources = broader research
+MAX_CONTEXT_CHARS = 60000       # Total budget for ALL sources combined
+LLM_MODEL = "llama-3.3-70b-versatile"  # 128K context window
 
 # --- Validation ---
 def validate_keys():
-    """Check if required API keys are set."""
     missing = []
     if not GROQ_API_KEY:
         missing.append("GROQ_API_KEY")
