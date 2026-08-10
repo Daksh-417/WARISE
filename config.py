@@ -11,9 +11,9 @@ TAVILY_API_KEY = st.secrets.get("TAVILY_API_KEY")
 
 # --- App Settings ---
 MAX_SEARCH_RESULTS = 6                  # Number of web sources to fetch
-MAX_CONTEXT_CHARS = 80000               # Total char budget for all sources (~20K tokens)
-LLM_MODEL = "llama-3.3-70b-versatile"   # 131K context window, 32K max completion
-MAX_REPORT_TOKENS = 8192                # Output cap PER SECTION (ceiling never touched)
+MAX_CONTEXT_CHARS = 28000               # ~7K tokens — fits the 12K TPM tier
+LLM_MODEL = "llama-3.3-70b-versatile"   # 131K context window
+MAX_REPORT_TOKENS = 4096                # longer sections, still under 12K/request
 
 # --- Validation ---
 def validate_keys():
